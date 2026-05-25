@@ -2,3 +2,4 @@ Nyx Editor Changelog
 
 2026-05-25
 Version 1.01 Added clear screen function
+Version 1.02 Fixed emoji visibility

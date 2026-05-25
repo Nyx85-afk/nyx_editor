@@ -98,15 +98,15 @@
   /* ── Emoji Panel ── */
   .emoji-panel {
     display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
+    position: fixed;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px;
-    z-index: 100;
+    z-index: 1000;
     width: 260px;
+    max-height: 320px;
+    overflow-y: auto;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   }
 
@@ -547,8 +547,31 @@ function filterEmoji(q) {
 
 function toggleEmoji(e) {
   e.stopPropagation();
-  document.getElementById('emojiPanel').classList.toggle('open');
-  if (document.getElementById('emojiPanel').classList.contains('open')) {
+  const panel = document.getElementById('emojiPanel');
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const panelHeight = 320;
+  const panelWidth = 260;
+
+  panel.classList.toggle('open');
+
+  if (panel.classList.contains('open')) {
+    // Position horizontally — don't overflow right edge
+    let left = rect.left;
+    if (left + panelWidth > window.innerWidth - 8) {
+      left = window.innerWidth - panelWidth - 8;
+    }
+
+    // Position vertically — open upward if not enough space below
+    let top;
+    if (rect.bottom + panelHeight + 6 > window.innerHeight) {
+      top = rect.top - panelHeight - 6;
+    } else {
+      top = rect.bottom + 6;
+    }
+
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
     setTimeout(() => document.getElementById('emojiSearch').focus(), 50);
   }
 }
