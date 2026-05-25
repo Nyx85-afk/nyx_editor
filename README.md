@@ -1,5 +1,7 @@
 # Nyx Editor ✦
 
+👉 [**Try the Live Demo on Neocities**](https://your-neocities-url-here.neocities.org)
+
 A clean, distraction-free markdown editor that lives in a single HTML file. No install, no server, no dependencies. Just open it and write.
 
 ---
@@ -34,23 +36,23 @@ That's it.
 
 ## Toolbar reference
 
-| Button | Action |
-|--------|--------|
-| B I S | Bold, italic, strikethrough |
-| ` ` | Inline code |
-| H1 H2 H3 | Headings |
-| ❝ | Blockquote |
-| • list | Bullet list |
-| 1. list | Numbered list |
-| — | Horizontal divider |
-| [ link ] | Insert link |
-| ☺ emoji | Emoji picker |
-| ✦ new | New document |
-| ↑ open | Open a `.md` or `.txt` file |
-| ⎘ copy | Copy raw markdown to clipboard |
-| ↓ save | Download as `.md` |
-| ⇥ html | Export as styled HTML |
-| ? help | Markdown cheat sheet |
+| Button   | Action                         |
+| -------- | ------------------------------ |
+| B I S    | Bold, italic, strikethrough    |
+| ` `      | Inline code                    |
+| H1 H2 H3 | Headings                       |
+| ❝        | Blockquote                     |
+| • list   | Bullet list                    |
+| 1. list  | Numbered list                  |
+| —        | Horizontal divider             |
+| [ link ] | Insert link                    |
+| ☺ emoji  | Emoji picker                   |
+| ✦ new    | New document                   |
+| ↑ open   | Open a `.md` or `.txt` file    |
+| ⎘ copy   | Copy raw markdown to clipboard |
+| ↓ save   | Download as `.md`              |
+| ⇥ html   | Export as styled HTML          |
+| ? help   | Markdown cheat sheet           |
 
 ---
 
@@ -81,7 +83,7 @@ Full native file system access is planned for the Tauri desktop app release.
 Built with vanilla HTML, CSS and JavaScript. Zero build steps, zero frameworks, zero dependencies except:
 
 - [marked.js](https://marked.js.org/) — markdown parsing
-- [JetBrains Mono](https://www.jetbrains.com/lp/mono/) — editor font  
+- [JetBrains Mono](https://www.jetbrains.com/lp/mono/) — editor font
 - [Fraunces](https://fonts.google.com/specimen/Fraunces) — preview font
 
 ---
@@ -92,4 +94,4 @@ MIT — do whatever you like with it. A credit is always appreciated but never r
 
 ---
 
-*Built with ❤️ and Claude*
+_Built with ❤️ and Claude_
