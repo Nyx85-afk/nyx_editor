@@ -759,7 +759,7 @@ function confirmNewFile() {
   }
   localStorage.removeItem(SAVE_KEY);
   currentFilename = 'document.md';
-  editor.value = WELCOME;
+  editor.value = '';
   updatePreview();
   updateStats();
   closeModal();
