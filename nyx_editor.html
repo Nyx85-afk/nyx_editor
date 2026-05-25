@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyx Editor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #1a1a1a;
+    --surface:   #222222;
+    --border:    #2e2e2e;
+    --muted:     #444;
+    --text:      #d4cfc8;
+    --text-dim:  #7a756e;
+    --accent:    #e07b3a;
+    --accent-dim:#7a3e18;
+    --code-bg:   #1e1e1e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .toolbar button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .toolbar button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(224,123,58,0.08);
+  }
+
+  .toolbar .sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  /* ── Emoji button ── */
+  .emoji-btn {
+    position: relative;
+  }
+
+  .emoji-btn > button {
+    font-size: 0.85rem !important;
+  }
+
+  /* ── Emoji Panel ── */
+  .emoji-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 100;
+    width: 260px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  .emoji-panel.open { display: block; }
+
+  .emoji-search {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+    outline: none;
+  }
+
+  .emoji-search:focus { border-color: var(--accent); }
+
+  .emoji-category {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 6px 0 4px;
+  }
+
+  .emoji-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .emoji-grid::-webkit-scrollbar { width: 4px; }
+  .emoji-grid::-webkit-scrollbar-track { background: transparent; }
+  .emoji-grid::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+  .emoji-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 3px;
+    border-radius: 4px;
+    transition: background 0.1s;
+    line-height: 1;
+  }
+
+  .emoji-item:hover { background: rgba(224,123,58,0.15); }
+
+  /* ── Stats bar ── */
+  .stats {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* ── Main ── */
+  main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Panes ── */
+  .pane {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pane-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  #editor {
+    flex: 1;
+    background: var(--bg);
+    color: var(--text);
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.8;
+    caret-color: var(--accent);
+    overflow-y: auto;
+  }
+
+  #editor::selection { background: rgba(224,123,58,0.25); }
+
+  #editor::-webkit-scrollbar { width: 6px; }
+  #editor::-webkit-scrollbar-track { background: transparent; }
+  #editor::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+
+  /* ── Divider ── */
+  .divider {
+    width: 1px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ── Preview ── */
+  #preview {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+    background: var(--bg);
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--text);
+  }
+
+  #preview::-webkit-scrollbar { width: 6px; }
+  #preview::-webkit-scrollbar-track { background: transparent; }
+  #preview::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+
+  #preview h1,#preview h2,#preview h3,
+  #preview h4,#preview h5,#preview h6 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    color: var(--accent);
+    margin: 1.4em 0 0.5em;
+    line-height: 1.3;
+  }
+  #preview h1 { font-size: 2rem; }
+  #preview h2 { font-size: 1.5rem; }
+  #preview h3 { font-size: 1.2rem; }
+
+  #preview p { margin-bottom: 1em; }
+
+  #preview a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-dim); }
+  #preview a:hover { border-color: var(--accent); }
+
+  #preview code {
+    background: var(--code-bg);
+    color: #e0a070;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+  }
+
+  #preview pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 1em 0;
+  }
+
+  #preview pre code {
+    background: none;
+    padding: 0;
+    color: #c0a080;
+  }
+
+  #preview blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  #preview ul, #preview ol {
+    padding-left: 1.5em;
+    margin-bottom: 1em;
+  }
+
+  #preview li { margin-bottom: 0.3em; }
+
+  #preview hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2em 0;
+  }
+
+  #preview table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1em;
+    font-size: 0.9em;
+  }
+
+  #preview th {
+    background: var(--surface);
+    color: var(--accent);
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 400;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8em;
+    letter-spacing: 0.05em;
+  }
+
+  #preview td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #preview img { max-width: 100%; border-radius: 4px; }
+
+  #preview strong { color: #e8e0d8; font-weight: 400; }
+  #preview em { color: var(--text-dim); }
+
+  /* ── Confirm modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  }
+  .modal p {
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .modal p strong { color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-actions button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+  }
+  .modal-actions button:hover { border-color: var(--accent); color: var(--accent); }
+  .modal-actions .btn-danger { border-color: var(--accent-dim); color: var(--accent); }
+  .modal-actions .btn-danger:hover { background: rgba(224,123,58,0.12); }
+
+  /* ── Cheatsheet ── */
+  .modal.cheatsheet { max-width: 620px; width: 95%; }
+  .cheat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cheat-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); }
+  .cheat-close { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; }
+  .cheat-close:hover { color: var(--accent); }
+  .cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .cheat-cat { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 8px; }
+  .cheat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.75rem; }
+  .cheat-row code { background: var(--code-bg); color: #e0a070; padding: 1px 5px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; }
+  .cheat-row span { color: var(--text-dim); }
+
+  .empty-hint {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="modal-overlay" id="cheatsheetModal">
+  <div class="modal cheatsheet">
+    <div class="cheat-header">
+      <span class="cheat-title">markdown reference</span>
+      <button onclick="toggleCheatsheet()" class="cheat-close">✕</button>
+    </div>
+    <div class="cheat-grid">
+      <div class="cheat-section">
+        <div class="cheat-cat">Text</div>
+        <div class="cheat-row"><code>**bold**</code><span><strong>bold</strong></span></div>
+        <div class="cheat-row"><code>*italic*</code><span><em>italic</em></span></div>
+        <div class="cheat-row"><code>~~strike~~</code><span style="text-decoration:line-through">strike</span></div>
+        <div class="cheat-row"><code>`code`</code><span style="font-family:monospace;color:#e0a070">code</span></div>
+      </div>
+      <div class="cheat-section">
+        <div class="cheat-cat">Headings</div>
+        <div class="cheat-row"><code># H1</code><span>Heading 1</span></div>
+        <div class="cheat-row"><code>## H2</code><span>Heading 2</span></div>
+        <div class="cheat-row"><code>### H3</code><span>Heading 3</span></div>
+      </div>
+      <div class="cheat-section">
+        <div class="cheat-cat">Lists</div>
+        <div class="cheat-row"><code>- item</code><span>bullet list</span></div>
+        <div class="cheat-row"><code>1. item</code><span>numbered list</span></div>
+        <div class="cheat-row"><code>- [ ] task</code><span>task list</span></div>
+        <div class="cheat-row"><code>- [x] done</code><span>checked task</span></div>
+      </div>
+      <div class="cheat-section">
+        <div class="cheat-cat">Blocks</div>
+        <div class="cheat-row"><code>&gt; text</code><span>blockquote</span></div>
+        <div class="cheat-row"><code>---</code><span>divider</span></div>
+        <div class="cheat-row"><code>```code```</code><span>code block</span></div>
+      </div>
+      <div class="cheat-section">
+        <div class="cheat-cat">Links & Images</div>
+        <div class="cheat-row"><code>[text](url)</code><span>link</span></div>
+        <div class="cheat-row"><code>![alt](url)</code><span>image</span></div>
+      </div>
+      <div class="cheat-section">
+        <div class="cheat-cat">Tables</div>
+        <div class="cheat-row"><code>| A | B |</code><span>header row</span></div>
+        <div class="cheat-row"><code>|---|---|</code><span>separator</span></div>
+        <div class="cheat-row"><code>| 1 | 2 |</code><span>data row</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newFileModal">
+  <div class="modal">
+    <p>Start a <strong>new file</strong>? Your current document will be cleared from the editor.<br><br>
+    Your last autosave is safe — use <em>↓ save</em> first if you want a copy.</p>
+    <div class="modal-actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" onclick="confirmNewFile()">Yes, clear it</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">nyx ✦ editor</div>
+
+  <div class="toolbar" id="toolbar">
+    <button onclick="wrap('**','**')" title="Bold">B</button>
+    <button onclick="wrap('*','*')" title="Italic" style="font-style:italic">I</button>
+    <button onclick="wrap('~~','~~')" title="Strikethrough" style="text-decoration:line-through">S</button>
+    <button onclick="wrap('`','`')" title="Inline code">` `</button>
+    <div class="sep"></div>
+    <button onclick="insertLine('# ')" title="H1">H1</button>
+    <button onclick="insertLine('## ')" title="H2">H2</button>
+    <button onclick="insertLine('### ')" title="H3">H3</button>
+    <div class="sep"></div>
+    <button onclick="insertLine('> ')" title="Blockquote">❝</button>
+    <button onclick="insertLine('- ')" title="List">• list</button>
+    <button onclick="insertLine('1. ')" title="Numbered list">1. list</button>
+    <button onclick="insertLine('---')" title="Divider">—</button>
+    <button onclick="insertLink()" title="Link">[ link ]</button>
+    <div class="sep"></div>
+    <div class="emoji-btn" id="emojiBtn">
+      <button onclick="toggleEmoji(event)" title="Insert emoji">☺ emoji</button>
+      <div class="emoji-panel" id="emojiPanel">
+        <input class="emoji-search" type="text" placeholder="search…" oninput="filterEmoji(this.value)" id="emojiSearch">
+        <div id="emojiResults"></div>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <button onclick="newFile()" title="New file" style="vertical-align:middle"><span style="font-size:0.6rem;vertical-align:middle">✦</span> new</button>
+    <button onclick="openFile()" title="Open .md file">↑ open</button>
+    <button onclick="copyMD()" title="Copy markdown">⎘ copy</button>
+    <button onclick="downloadMD()" title="Download .md">↓ save</button>
+    <button onclick="exportHTML()" title="Export as HTML">⇥ html</button>
+    <div class="sep"></div>
+    <button onclick="toggleCheatsheet()" title="Markdown reference">? help</button>
+  </div>
+  <input type="file" id="fileInput" accept=".md,.txt,.markdown" style="display:none" onchange="handleFileLoad(event)">
+
+  <div class="stats" id="stats">0 words · 0 lines</div>
+</header>
+
+<main>
+  <div class="pane">
+    <div class="pane-label">markdown</div>
+    <textarea id="editor" spellcheck="true" placeholder="# Hello, Nyx
+
+Start writing here…
+
+Use the toolbar above for formatting, or just type markdown directly."></textarea>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="pane">
+    <div class="pane-label">preview</div>
+    <div id="preview"><p class="empty-hint">start typing to see your document rendered…</p></div>
+  </div>
+</main>
+
+<script>
+// ── Emoji data ──
+const EMOJIS = {
+  "Smileys": ["😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇","🥰","😍","🤩","😘","😗","☺️","😚","😙","🥲","😋","😛","😜","🤪","😝","🤑","🤗","🤭","🤫","🤔","🤐","🤨","😐","😑","😶","😶‍🌫️","😏","😒","🙄","😬","😮‍💨","🤥","😌","😔","😪","🤤","😴","😷","🤒","🤕","🤢","🤮","🤧","🥵","🥶","🥴","😵","😵‍💫","🤯","🤠","🥳","🥸","😎","🤓","🧐","😕","😟","🙁","☹️","😮","😯","😲","😳","🥺","😦","😧","😨","😰","😥","😢","😭","😱","😖","😣","😞","😓","😩","😫","🥱","😤","😡","😠","🤬","😈","👿"],
+  "Gestures": ["👋","🤚","🖐","✋","🖖","👌","🤌","🤏","✌️","🤞","🤟","🤘","🤙","👈","👉","👆","🖕","👇","☝️","👍","👎","✊","👊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍️","💅","🤳","💪","🦾","🦿"],
+  "Nature": ["🌱","🌿","🍀","🌾","🌵","🌲","🌳","🌴","🍄","🌸","🌺","🌻","🌹","🌷","💐","🍁","🍂","🍃","🌊","🌀","🌈","🌤","⛅","🌥","☁️","🌦","🌧","⛈","🌩","🌨","❄️","☃️","⛄","🌬","💨","💧","💦","☔","⚡","🔥","🌍","🌙","⭐","🌟","💫","✨"],
+  "Objects": ["📝","📖","📚","📎","✂️","🖊","🖋","✒️","🔍","🔎","💡","🔦","🕯","🖥","💻","🖱","⌨️","📱","☎️","📷","🎥","🎬","🎵","🎶","🎸","🎹","🎺","🎻","🥁","🎤","🎧","📡","🔋","🔌","💿","📀","🗂","📁","📂","🗒","📅","📆","📊","📈","📉","📋","📌","📍","🗺","🧭","⏰","⌚","🏆","🥇","🎖","🎗","🎁","🎀","🎊","🎉"],
+  "Symbols": ["❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❤️‍🔥","💕","💞","💓","💗","💖","💘","💝","💟","♾","✅","❎","🔴","🟠","🟡","🟢","🔵","🟣","⚫","⚪","🔶","🔷","🔸","🔹","▪️","▫️","◾","◽","◼️","◻️","🔲","🔳","⬛","⬜","🟥","🟧","🟨","🟩","🟦","🟪","⭕","❌","❓","❗","💯","🔔","🔕","🔇","🔈","🔉","🔊","📣","📢","🔑","🗝","🔒","🔓"]
+};
+
+let allEmojis = [];
+Object.entries(EMOJIS).forEach(([cat, list]) => list.forEach(e => allEmojis.push({e, cat})));
+
+function renderEmojiPanel(items) {
+  const el = document.getElementById('emojiResults');
+  if (!items.length) { el.innerHTML = '<div class="emoji-category">no results</div>'; return; }
+  
+  // Group by category
+  const grouped = {};
+  items.forEach(({e, cat}) => { if (!grouped[cat]) grouped[cat]=[]; grouped[cat].push(e); });
+  
+  el.innerHTML = Object.entries(grouped).map(([cat, list]) => `
+    <div class="emoji-category">${cat}</div>
+    <div class="emoji-grid">${list.map(e => `<button class="emoji-item" onclick="insertEmoji('${e}')">${e}</button>`).join('')}</div>
+  `).join('');
+}
+
+renderEmojiPanel(allEmojis);
+
+function filterEmoji(q) {
+  if (!q) { renderEmojiPanel(allEmojis); return; }
+  // Simple: search by category name or just show all if no match system
+  const lower = q.toLowerCase();
+  const filtered = allEmojis.filter(({cat}) => cat.toLowerCase().includes(lower));
+  renderEmojiPanel(filtered.length ? filtered : allEmojis.slice(0, 40));
+}
+
+function toggleEmoji(e) {
+  e.stopPropagation();
+  document.getElementById('emojiPanel').classList.toggle('open');
+  if (document.getElementById('emojiPanel').classList.contains('open')) {
+    setTimeout(() => document.getElementById('emojiSearch').focus(), 50);
+  }
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('emojiPanel').classList.remove('open');
+});
+
+function insertEmoji(emoji) {
+  const ed = document.getElementById('editor');
+  const s = ed.selectionStart;
+  const val = ed.value;
+  ed.value = val.slice(0, s) + emoji + val.slice(ed.selectionEnd);
+  ed.selectionStart = ed.selectionEnd = s + emoji.length;
+  ed.focus();
+  updatePreview();
+  document.getElementById('emojiPanel').classList.remove('open');
+}
+
+// ── Editor logic ──
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+
+marked.setOptions({ breaks: true, gfm: true });
+
+function updatePreview() {
+  const val = editor.value.trim();
+  preview.innerHTML = val ? marked.parse(val) : '<p class="empty-hint">start typing to see your document rendered…</p>';
+  updateStats();
+}
+
+function updateStats() {
+  const text = editor.value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lines = text.split('\n').length;
+  document.getElementById('stats').textContent = `${words} words · ${lines} lines`;
+}
+
+editor.addEventListener('input', updatePreview);
+
+// ── Tab support ──
+editor.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = editor.selectionStart;
+    editor.value = editor.value.slice(0, s) + '  ' + editor.value.slice(editor.selectionEnd);
+    editor.selectionStart = editor.selectionEnd = s + 2;
+    updatePreview();
+  }
+});
+
+// ── Toolbar helpers ──
+function wrap(before, after) {
+  const ed = editor;
+  const s = ed.selectionStart, en = ed.selectionEnd;
+  const sel = ed.value.slice(s, en) || 'text';
+  ed.value = ed.value.slice(0, s) + before + sel + after + ed.value.slice(en);
+  ed.selectionStart = s + before.length;
+  ed.selectionEnd = s + before.length + sel.length;
+  ed.focus();
+  updatePreview();
+}
+
+function insertLine(prefix) {
+  const ed = editor;
+  const s = ed.selectionStart;
+  const before = ed.value.lastIndexOf('\n', s - 1);
+  const lineStart = before + 1;
+  ed.value = ed.value.slice(0, lineStart) + prefix + ed.value.slice(lineStart);
+  ed.selectionStart = ed.selectionEnd = lineStart + prefix.length;
+  ed.focus();
+  updatePreview();
+}
+
+function insertLink() {
+  const ed = editor;
+  const s = ed.selectionStart, en = ed.selectionEnd;
+  const sel = ed.value.slice(s, en) || 'link text';
+  const replacement = `[${sel}](url)`;
+  ed.value = ed.value.slice(0, s) + replacement + ed.value.slice(en);
+  ed.selectionStart = s + sel.length + 3;
+  ed.selectionEnd = s + sel.length + 6;
+  ed.focus();
+  updatePreview();
+}
+
+function copyMD() {
+  navigator.clipboard.writeText(editor.value).then(() => {
+    const btn = [...document.querySelectorAll('.toolbar button')].find(b => b.textContent.includes('copy'));
+    if (btn) { btn.textContent = '✓ copied'; setTimeout(() => btn.textContent = '⎘ copy', 1500); }
+  });
+}
+
+function exportHTML() {
+  const htmlFilename = currentFilename.replace(/\.(md|markdown|txt)$/i, '') + '.html';
+  const content = marked.parse(editor.value);
+  const title = htmlFilename.replace('.html','');
+
+  const styles = [
+    ':root { --bg:#1a1a1a; --surface:#222222; --border:#2e2e2e; --text:#d4cfc8; --text-dim:#7a756e; --accent:#e07b3a; --accent-dim:#7a3e18; --code-bg:#1e1e1e; }',
+    '* { box-sizing:border-box; margin:0; padding:0; }',
+    'body { background:var(--bg); color:var(--text); font-family:"Fraunces",serif; max-width:780px; margin:0 auto; padding:60px 32px; line-height:1.85; }',
+    'h1,h2,h3,h4,h5,h6 { font-family:"Fraunces",serif; font-weight:300; color:var(--accent); margin:1.4em 0 0.5em; line-height:1.3; }',
+    'h1 { font-size:2rem; } h2 { font-size:1.5rem; } h3 { font-size:1.2rem; }',
+    'p { margin-bottom:1em; }',
+    'a { color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-dim); }',
+    'a:hover { border-color:var(--accent); }',
+    'code { background:var(--code-bg); color:#e0a070; padding:1px 5px; border-radius:3px; font-family:"JetBrains Mono",monospace; font-size:0.85em; }',
+    'pre { background:var(--code-bg); border:1px solid var(--border); border-radius:6px; padding:16px; overflow-x:auto; margin:1em 0; }',
+    'pre code { background:none; padding:0; color:#c0a080; }',
+    'blockquote { border-left:3px solid var(--accent); margin:1em 0; padding:0.5em 1em; color:var(--text-dim); font-style:italic; }',
+    'ul,ol { padding-left:1.5em; margin-bottom:1em; }',
+    'li { margin-bottom:0.3em; }',
+    'hr { border:none; border-top:1px solid var(--border); margin:2em 0; }',
+    'table { border-collapse:collapse; width:100%; margin-bottom:1em; font-size:0.9em; }',
+    'th { background:var(--surface); color:var(--accent); padding:8px 12px; text-align:left; font-weight:400; font-family:"JetBrains Mono",monospace; font-size:0.8em; }',
+    'td { padding:8px 12px; border-bottom:1px solid var(--border); }',
+    'img { max-width:100%; border-radius:4px; }',
+    'strong { color:#e8e0d8; font-weight:400; }',
+    'em { color:var(--text-dim); }'
+  ].join('\n');
+
+  const fullHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n' +
+    '<meta charset="UTF-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+    '<title>' + title + '</title>\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">\n' +
+    '<style>\n' + styles + '\n</style>\n' +
+    '</head>\n<body>\n' + content + '\n</body>\n</html>';
+
+  const blob = new Blob([fullHTML], {type: 'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = htmlFilename;
+  a.click();
+
+  const btn = [...document.querySelectorAll('.toolbar button')].find(b => b.textContent.includes('html'));
+  if (btn) { btn.textContent = '✓ exported'; setTimeout(() => btn.textContent = '⇥ html', 1500); }
+}
+
+
+function toggleCheatsheet() {
+  document.getElementById('cheatsheetModal').classList.toggle('open');
+}
+
+document.getElementById('cheatsheetModal').addEventListener('click', function(e) {
+  if (e.target === this) toggleCheatsheet();
+});
+
+let currentFilename = 'document.md';
+
+function downloadMD() {
+  const blob = new Blob([editor.value], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = currentFilename;
+  a.click();
+}
+
+function openFile() {
+  if (editor.value.trim()) {
+    pendingAction = 'open';
+    document.getElementById('newFileModal').classList.add('open');
+    document.querySelector('#newFileModal .btn-danger').textContent = 'Yes, open new';
+  } else {
+    document.getElementById('fileInput').click();
+  }
+}
+
+function handleFileLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  currentFilename = file.name;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    editor.value = ev.target.result;
+    updatePreview();
+    saveToLocal();
+    const stats = document.getElementById('stats');
+    stats.textContent = `opened: ${file.name}`;
+    clearTimeout(stats._timer);
+    stats._timer = setTimeout(() => updateStats(), 2000);
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+
+let pendingAction = null;
+
+function newFile() {
+  if (!editor.value.trim()) { confirmNewFile(); return; }
+  pendingAction = 'new';
+  document.querySelector('#newFileModal .btn-danger').textContent = 'Yes, clear it';
+  document.getElementById('newFileModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('newFileModal').classList.remove('open');
+  pendingAction = null;
+}
+
+function confirmNewFile() {
+  if (pendingAction === 'open') {
+    closeModal();
+    document.getElementById('fileInput').click();
+    return;
+  }
+  localStorage.removeItem(SAVE_KEY);
+  currentFilename = 'document.md';
+  editor.value = WELCOME;
+  updatePreview();
+  updateStats();
+  closeModal();
+  editor.focus();
+}
+
+// Close modal on overlay click
+document.getElementById('newFileModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+
+const SAVE_KEY = 'nyx-editor-content';
+
+function saveToLocal() {
+  localStorage.setItem(SAVE_KEY, editor.value);
+  showSaveIndicator();
+}
+
+function showSaveIndicator() {
+  const stats = document.getElementById('stats');
+  const words = editor.value.trim() ? editor.value.trim().split(/\s+/).length : 0;
+  const lines = editor.value.split('\n').length;
+  stats.textContent = `saved · ${words} words · ${lines} lines`;
+  clearTimeout(stats._timer);
+  stats._timer = setTimeout(() => updateStats(), 1500);
+}
+
+const WELCOME = `# Welcome to Nyx Editor ✦
+
+Hello, and thank you for using Nyx Editor.
+
+This is a clean, distraction-free markdown editor built for writers who want simplicity without compromise. No clutter, no fuss — just you and your words.
+
+---
+
+## Getting started
+
+- **Write** in this pane on the left
+- **Preview** renders live on the right
+- Use the **toolbar** above for formatting shortcuts
+- Hit **☺ emoji** to browse and insert emoji
+- **↓ save** downloads your file as \`.md\`
+- **⇥ html** exports a styled HTML page ready to publish
+- **? help** shows a markdown quick-reference
+
+---
+
+## Markdown in a nutshell
+
+You can write *italic*, **bold**, or ~~strikethrough~~ text inline.
+
+> Blockquotes look like this — great for pulled quotes or notes.
+
+\`\`\`
+code blocks work too
+\`\`\`
+
+---
+
+*Clear this welcome and start writing. Your work saves automatically.* 🌱
+`;
+
+// Restore on load or show welcome
+const saved = localStorage.getItem(SAVE_KEY);
+if (saved) {
+  editor.value = saved;
+  updatePreview();
+} else {
+  editor.value = WELCOME;
+  updatePreview();
+}
+
+// Save on input (debounced)
+let saveTimer;
+editor.addEventListener('input', () => {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToLocal, 600);
+});
+
+// Save on close
+window.addEventListener('beforeunload', () => localStorage.setItem(SAVE_KEY, editor.value));
+
+// Init stats
+updateStats();
+</script>
+</body>
+</html>
