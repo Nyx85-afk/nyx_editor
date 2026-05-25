@@ -1,6 +1,6 @@
 # Nyx Editor ✦
 
-👉 [**Try the Live Demo on Neocities**](https://your-neocities-url-here.neocities.org)
+👉 [**Try the Live Demo on Neocities**](https://nyx85.neocities.org/codeandcarbon/code/nyx_editor)
 
 A clean, distraction-free markdown editor that lives in a single HTML file. No install, no server, no dependencies. Just open it and write.
 
