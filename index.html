@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>README</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#1a1a1a; --surface:#222222; --border:#2e2e2e; --text:#d4cfc8; --text-dim:#7a756e; --accent:#e07b3a; --accent-dim:#7a3e18; --code-bg:#1e1e1e; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:"Fraunces",serif; max-width:780px; margin:0 auto; padding:60px 32px; line-height:1.85; }
+h1,h2,h3,h4,h5,h6 { font-family:"Fraunces",serif; font-weight:300; color:var(--accent); margin:1.4em 0 0.5em; line-height:1.3; }
+h1 { font-size:2rem; } h2 { font-size:1.5rem; } h3 { font-size:1.2rem; }
+p { margin-bottom:1em; }
+a { color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-dim); }
+a:hover { border-color:var(--accent); }
+code { background:var(--code-bg); color:#e0a070; padding:1px 5px; border-radius:3px; font-family:"JetBrains Mono",monospace; font-size:0.85em; }
+pre { background:var(--code-bg); border:1px solid var(--border); border-radius:6px; padding:16px; overflow-x:auto; margin:1em 0; }
+pre code { background:none; padding:0; color:#c0a080; }
+blockquote { border-left:3px solid var(--accent); margin:1em 0; padding:0.5em 1em; color:var(--text-dim); font-style:italic; }
+ul,ol { padding-left:1.5em; margin-bottom:1em; }
+li { margin-bottom:0.3em; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+table { border-collapse:collapse; width:100%; margin-bottom:1em; font-size:0.9em; }
+th { background:var(--surface); color:var(--accent); padding:8px 12px; text-align:left; font-weight:400; font-family:"JetBrains Mono",monospace; font-size:0.8em; }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+img { max-width:100%; border-radius:4px; }
+strong { color:#e8e0d8; font-weight:400; }
+em { color:var(--text-dim); }
+</style>
+</head>
+<body>
+<h1>Nyx Editor ✦</h1>
+<p>👉 <a href="https://nyx85.neocities.org/codeandcarbon/code/nyx_editor"><strong>Try the Live Demo on Neocities</strong></a></p>
+<p>A clean, distraction-free markdown editor that lives in a single HTML file. No install, no server, no dependencies. Just open it and write.</p>
+<hr>
+<h2>Features</h2>
+<ul>
+<li><strong>Live preview</strong> — renders as you type, editor left, preview right</li>
+<li><strong>Autosave</strong> — your work saves automatically to browser localStorage</li>
+<li><strong>Open &amp; save</strong> — load <code>.md</code> files, save them back with their original filename</li>
+<li><strong>Export to HTML</strong> — one click produces a styled, self-contained HTML page ready to publish</li>
+<li><strong>Emoji picker</strong> — searchable emoji panel built into the toolbar</li>
+<li><strong>Markdown cheat sheet</strong> — quick reference always one click away</li>
+<li><strong>Welcome screen</strong> — new users get a guided introduction</li>
+<li><strong>Beautiful typography</strong> — Fraunces serif for reading, JetBrains Mono for writing</li>
+<li><strong>Dark theme</strong> — easy on the eyes, built for long writing sessions</li>
+</ul>
+<hr>
+<h2>Usage</h2>
+<p>No installation required. Just download <code>nyx_editor.html</code> and open it in any modern browser.</p>
+<pre><code>1. Download nyx_editor.html
+2. Open it in Chrome, Firefox, or any modern browser
+3. Write
+</code></pre>
+<p>That&#39;s it.</p>
+<hr>
+<h2>Toolbar reference</h2>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B I S</td>
+<td>Bold, italic, strikethrough</td>
+</tr>
+<tr>
+<td><code> </code></td>
+<td>Inline code</td>
+</tr>
+<tr>
+<td>H1 H2 H3</td>
+<td>Headings</td>
+</tr>
+<tr>
+<td>❝</td>
+<td>Blockquote</td>
+</tr>
+<tr>
+<td>• list</td>
+<td>Bullet list</td>
+</tr>
+<tr>
+<td>1. list</td>
+<td>Numbered list</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Horizontal divider</td>
+</tr>
+<tr>
+<td>[ link ]</td>
+<td>Insert link</td>
+</tr>
+<tr>
+<td>☺ emoji</td>
+<td>Emoji picker</td>
+</tr>
+<tr>
+<td>✦ new</td>
+<td>New document</td>
+</tr>
+<tr>
+<td>↑ open</td>
+<td>Open a <code>.md</code> or <code>.txt</code> file</td>
+</tr>
+<tr>
+<td>⎘ copy</td>
+<td>Copy raw markdown to clipboard</td>
+</tr>
+<tr>
+<td>↓ save</td>
+<td>Download as <code>.md</code></td>
+</tr>
+<tr>
+<td>⇥ html</td>
+<td>Export as styled HTML</td>
+</tr>
+<tr>
+<td>? help</td>
+<td>Markdown cheat sheet</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>A note on saving</h2>
+<p>Because Nyx Editor runs as a local HTML file, it uses browser localStorage for autosave. This means:</p>
+<ul>
+<li>Your work persists between sessions automatically</li>
+<li>If you move <code>nyx_editor.html</code> to a different folder, localStorage resets — pick a permanent home for it</li>
+<li><strong>↓ save</strong> downloads a proper <code>.md</code> file you can back up anywhere</li>
+<li>To update an existing file, let the browser replace it when prompted on download</li>
+</ul>
+<p>Full native file system access is planned for the Tauri desktop app release.</p>
+<hr>
+<h2>Roadmap</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Syntax highlighting in the editor pane</li>
+<li><input disabled="" type="checkbox"> Tauri desktop app (Linux, Windows, macOS)</li>
+<li><input disabled="" type="checkbox"> Native file open/save dialogs</li>
+<li><input disabled="" type="checkbox"> Word count goals</li>
+</ul>
+<hr>
+<h2>Tech</h2>
+<p>Built with vanilla HTML, CSS and JavaScript. Zero build steps, zero frameworks, zero dependencies except:</p>
+<ul>
+<li><a href="https://marked.js.org/">marked.js</a> — markdown parsing</li>
+<li><a href="https://www.jetbrains.com/lp/mono/">JetBrains Mono</a> — editor font</li>
+<li><a href="https://fonts.google.com/specimen/Fraunces">Fraunces</a> — preview font</li>
+</ul>
+<hr>
+<h2>License</h2>
+<p>MIT — do whatever you like with it. A credit is always appreciated but never required.</p>
+<hr>
+<p><em>Built with ❤️ and Claude</em></p>
+
+</body>
+</html>
